@@ -3,8 +3,7 @@ package com.github.lzenczuk.rxcrex.wsdispatcher;
 import rx.Observable;
 import rx.Subscription;
 
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -29,6 +28,21 @@ public class WsDispatcher {
         });
 
         connectionsStream.subscribe(wsConnection -> {
+
+            wsConnection.getInput().groupBy(s -> {
+                String messageType = Arrays.asList(s.split("_")).stream().findFirst().orElse("");
+
+                switch (messageType){
+                    case "subscribe": return "subscribe";
+                    case "unsubscribe": return "unsubscribe";
+                    case "command": return "command";
+                    default: return "unknown";
+                }
+            }).subscribe(group -> {
+                switch (group.getKey()){
+                    case "subscribe": group.subscribe(s -> System.out.println("In subscribe string: "+s));
+                }
+            });
 
             Observable<HashMap<String, Subscription>> subscriptions = wsConnection.getInput()
                     .filter(message -> subscribePattern.matcher(message).matches())

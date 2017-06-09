@@ -5,6 +5,7 @@ import rx.Subscription;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -52,6 +53,7 @@ public class WsDispatcher {
 
             wsConnection.getInput()
                     .filter(message -> unSubscribePattern.matcher(message).matches())
+                    //.delay(100, TimeUnit.MILLISECONDS) - maybe should be here?
                     .map(s -> s.split("_")[1])
                     .withLatestFrom(subscriptions, (producerName, producerSubscriptionsMap) -> {
                         if(producerSubscriptionsMap.containsKey(producerName)){
